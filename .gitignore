@@ -1,0 +1,13 @@
+# ignore these plugins
+wp-content/plugins/hello.php
+
+# ignore node dependency directories
+node_modules/
+
+# ignore log files and databases
+vendor/
+*.log
+*.sql
+*.sqlite
+.DS_Store
+.env
