@@ -4,8 +4,8 @@ namespace Digifact;
 
 use DateTime;
 use Exception;
-use Digifact\Nit;
 use SimpleXMLElement;
+use Digifact\Models\Nit;
 
 /**
  * Class AnulationData

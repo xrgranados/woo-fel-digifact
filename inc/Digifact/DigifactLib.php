@@ -3,16 +3,20 @@
 namespace Digifact;
 
 use Exception;
-use Digifact\Issuer;
-use Digifact\Address;
-use Digifact\GeneralData;
+use Digifact\Models\Tax;
+use Digifact\Models\Issuer;
+use Digifact\Models\Phrase;
+use Digifact\Models\Address;
+use Digifact\Models\Product;
+use Digifact\Models\Receiver;
+use Digifact\Models\GeneralData;
 
 /**
  * Class DigiFact
  *
  * This class handles the DigiFact functionality for the WooCommerce plugin.
  *
- * @package WooFelDigiFact
+ * @package Digifact
  */
 class DigifactLib
 {

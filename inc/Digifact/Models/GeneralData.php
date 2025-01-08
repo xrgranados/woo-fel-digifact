@@ -1,6 +1,6 @@
 <?php
 
-namespace Digifact;
+namespace Digifact\Models;
 
 use DateTime;
 use Exception;

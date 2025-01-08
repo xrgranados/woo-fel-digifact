@@ -321,7 +321,7 @@ class InvoicesPage
             <td>
                 <?php
                 echo $this->renderActionButton([
-                    'class' => 'button button-link dashicons dashicons-visibility mr-0-25',
+                    'class' => 'button button-link fas fa-eye mr-0-25',
                     'href' => $viewInvoiceUrl,
                     'target' => '_blank',
                     'title' => __('Ver factura', 'fel-digifact'),
@@ -329,7 +329,7 @@ class InvoicesPage
 
                 if ($invoice->status === 'certified') {
                     echo $this->renderActionButton([
-                        'class' => 'button button-link void-invoice dashicons dashicons-no-alt button-link-delete mr-0-25',
+                        'class' => 'button button-link void-invoice fas fa-times button-link-delete mr-0-25',
                         'data-invoice-id' => $invoice->id,
                         'title' => __('Anular factura', 'fel-digifact'),
                     ]);

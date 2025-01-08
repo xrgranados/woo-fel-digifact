@@ -4,13 +4,16 @@ namespace Digifact;
 
 use Exception;
 use SimpleXMLElement;
-use Digifact\Issuer;
-use Digifact\Phrase;
-use Digifact\Receiver;
-use Digifact\GeneralData;
+use Digifact\Models\Issuer;
+use Digifact\Models\Phrase;
+use Digifact\Models\Product;
+use Digifact\Models\Receiver;
+use Digifact\Models\GeneralData;
 
 /**
  * Class to generate an XML invoice using the GTDocumento format.
+ *
+ * @package Digifact
  */
 class InvoiceGenerator
 {

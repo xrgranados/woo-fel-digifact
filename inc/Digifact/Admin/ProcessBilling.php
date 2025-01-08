@@ -59,7 +59,7 @@ class ProcessBilling
                 $viewInvoiceUrl,
                 '',
                 [
-                    'class' => 'button dashicons dashicons-visibility',
+                    'class' => 'button fas fa-eye text-center',
                     'target' => '_blank',
                     'title' => __('Ver factura', 'fel-digifact'),
                 ]
@@ -74,7 +74,7 @@ class ProcessBilling
         $customer_email = $order->get_billing_email() ?: $this->digifactSettings['digifact_email'];
 
         echo _link('#', '', [
-            'class' => 'button generate_invoice dashicons dashicons-text-page',
+            'class' => 'button generate_invoice fas fa-file text-center',
             'data-nit' => $customer_nit,
             'data-order-id' => $order_id,
             'data-email' => $customer_email,

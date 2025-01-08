@@ -1,10 +1,10 @@
 <?php
 
-namespace Digifact;
+namespace Digifact\Models;
 
 use Exception;
-use Digifact\Nit;
-use Digifact\Address;
+use Digifact\Models\Nit;
+use Digifact\Models\Address;
 
 /**
  * Class Receiver
