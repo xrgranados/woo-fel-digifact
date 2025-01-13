@@ -49,7 +49,7 @@ class ProcessBilling
         }
 
         ?>
-        <div id="dialog-generate-invoice" title="<?php __('Generar Factura Electrónica', 'fel-digifact'); ?>" style="display: none;">
+        <div id="dialog-generate-invoice" title="<?php _e('Generar Factura Electrónica', 'fel-digifact'); ?>" style="display: none;">
             <div class="modal-content w-full">
                 <div class="modal-header">
                     <h2>
@@ -107,7 +107,9 @@ class ProcessBilling
                 throw new Exception('No se pudo guardar la factura en la base de datos');
             }
 
-            wp_send_json_success(__('Factura generada con éxito.', 'fel-digifact'));
+            wp_send_json_success(
+                ['message' => __('Factura generada correctamente.', 'fel-digifact')],
+            );
         } catch (Exception $e) {
             wp_send_json_error(
                 __('Error al generar la factura: ', 'fel-digifact') . $e->getMessage(),

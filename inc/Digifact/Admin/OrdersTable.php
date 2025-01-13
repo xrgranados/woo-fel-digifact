@@ -36,7 +36,7 @@ class OrdersTable
      */
     private function renderFilters()
     {
-        ?>
+?>
         <div class="df-filters mt-4">
             <form id="df-orders-filters" method="get">
                 <input type="hidden" name="page" value="<?php echo $this->slug; ?>">
@@ -147,6 +147,13 @@ class OrdersTable
                 <h2 class="text-2xl font-bold mb-4">
                     <?php _e('Órdenes WooCommerce', 'fel-digifact'); ?>
                 </h2>
+
+                <?php if (! $this->digifactSettings) : ?>
+                    <div class="error">
+                        <p>Por favor, configure el plugin antes de continuar</p>
+                    </div>
+                <?php endif; ?>
+
                 <hr>
 
                 <?php $this->renderFilters(); ?>
@@ -213,7 +220,8 @@ class OrdersTable
                             $billingNit = function_exists('get_billing_nit')
                                 ? get_billing_nit($order->get_id())
                                 : get_post_meta($order->get_id(), '_billing_nit', true);
-                            $billingEmail = $order->get_billing_email() ?: $this->digifactSettings['digifact_email'];
+                            $configEmail = isset($this->digifactSettings['digifact_email']) ? $this->digifactSettings['digifact_email'] : '';
+                            $billingEmail = $order->get_billing_email() ?: $configEmail;
                         ?>
                             <tr class="odd:bg-white even:bg-gray-100">
                                 <td class="px-0-25 py-0-5 border-b">
@@ -369,7 +377,7 @@ class OrdersTable
                     ?>
                 </div>
             </div>
-        <?php
+<?php
         }
     }
 } // End OrdersTable Class

@@ -123,15 +123,24 @@ jQuery(document).ready(function ($) {
       customer_email: email,
     })
       .done(function (response) {
-        const { success, data } = response;
-        if (success) {
-          alert(data.message);
-          location.reload();
+        console.log(response);
+        if (!response.success) {
+          alert('No se pudo generar la factura');
+          return;
         }
+
+        const { data } = response;
+        alert(data.message);
+        location.reload();
       })
       .fail(function (response) {
-        const { data } = response.responseJSON;
-        alert(data.message);
+        console.log(response);
+        if (response.data) {
+          const { data } = response;
+          alert(data);
+        } else {
+          alert("No se pudo generar la factura");
+        }
       })
       .always(function () {
         // Hide the modal after sending

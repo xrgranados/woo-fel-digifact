@@ -11,6 +11,10 @@ function digifact_admin_assets()
         return;
     }
 
+    if (! isset($_GET['page'])) {
+        return;
+    }
+
     if ('digifact' !== substr($_GET['page'], 0, 8)) {
         return;
     }

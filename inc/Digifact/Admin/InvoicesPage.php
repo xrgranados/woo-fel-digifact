@@ -71,7 +71,7 @@ class InvoicesPage
         if ($_GET['page'] !== $this->slug) {
             return;
         }
-        ?>
+?>
         <div id="digifact-void-modal" role="dialog" title="<?php _e('¿Estás seguro de anular la factura?', 'fel-digifact'); ?>" style="display: none;">
             <div class="modal-content w-full">
                 <div class="modal-body">
@@ -287,6 +287,13 @@ class InvoicesPage
         <div class="wrap">
             <div id="digifact-invoices-container" class="df-container">
                 <h2 class="text-2xl font-bold mb-4"><?php _e('Facturas Emitidas', 'fel-digifact'); ?></h2>
+
+                <?php if (! $this->digifactSettings) : ?>
+                    <div class="error">
+                        <p>Por favor, configure el plugin antes de continuar</p>
+                    </div>
+                <?php endif; ?>
+
                 <hr>
                 <p class="text-lg mb-4">
                     <?php _e('Ingrese el NIT del cliente o el número de orden para filtrar.', 'fel-digifact'); ?>
@@ -487,7 +494,7 @@ class InvoicesPage
                     ?>
                 </div>
             </div>
-        <?php
+<?php
         }
         return $totalPages;
     }

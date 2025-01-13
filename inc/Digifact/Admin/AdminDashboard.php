@@ -17,12 +17,17 @@ class AdminDashboard
     /** @var Invoice invoice model instance */
     private $invoiceModel;
 
+    /** @var array DigiFact settings */
+    private $digifactSettings;
+
     /**
      * AdminMenu constructor.
      */
     public function __construct()
     {
         add_action('admin_menu', [$this, 'registerMenu']);
+
+        $this->digifactSettings = get_option('digifact_settings');
 
         $this->invoiceModel = new Invoice();
     }
@@ -56,9 +61,11 @@ class AdminDashboard
     public function renderDashboardPage()
     {
         $result = $this->getStats();
+
         ?>
         <div class="wrap">
             <div id="digifact-settings-container" class="bg-white shadow rounded p-4 grid grid-cols-12">
+
                 <div class="col-span-3">
                     <?php
                     echo _renderHtml('img', [
@@ -71,6 +78,12 @@ class AdminDashboard
 
                 <div class="col-span-9">
                     <h2 class="text-2xl font-bold mb-4"><?php _e('Dashboard', 'fel-digifact'); ?></h2>
+
+                    <?php if (! $this->digifactSettings) : ?>
+                        <div class="error">
+                            <p>Por favor, configure el plugin antes de continuar</p>
+                        </div>
+                    <?php endif; ?>
 
                     <hr>
 
@@ -145,7 +158,7 @@ class AdminDashboard
                 </div>
             </div>
         </div>
-        <?php
+<?php
     }
 
     /**
