@@ -90,6 +90,33 @@ class Invoice
     }
 
     /**
+     * Get all DigiFact invoice stats.
+     *
+     * @return array
+     */
+    public function getStats($filter = [])
+    {
+        // make query to get stats, total invoices, total amount, total canceled invoices
+        $query = "SELECT COUNT(*) as total_invoices,
+            SUM(amount) as total_amount,
+            SUM(IF(status = 'voided', 1, 0)) as total_void
+            FROM $this->tableName";
+
+        // add filter range date created
+        if (!empty($filter['date_start'])) {
+            $query .= " WHERE date(certificated_at) >= '{$filter['date_start']}'";
+        }
+
+        if (!empty($filter['date_end'])) {
+            $query .= " AND date(certificated_at) <= '{$filter['date_end']}'";
+        }
+
+        $stats = $this->wpdb->get_results($query);
+
+        return $stats;
+    }
+
+    /**
      * Get all DigiFact invoices.
      *
      * @param int $page
@@ -113,6 +140,21 @@ class Invoice
             if (!empty($filter['order_id'])) {
                 $wheres[] = "order_id LIKE %s";
                 $params[] = '%' . $filter['order_id'] . '%';
+            }
+
+            if (!empty($filter['invoice_number'])) {
+                $wheres[] = "invoice_number LIKE %s";
+                $params[] = '%' . $filter['invoice_number'] . '%';
+            }
+
+            if (!empty($filter['date_start'])) {
+                $wheres[] = "date(certificated_at) >= %s";
+                $params[] = $filter['date_start'];
+            }
+
+            if (!empty($filter['date_end'])) {
+                $wheres[] = "date(certificated_at) <= %s";
+                $params[] = $filter['date_end'];
             }
 
             // Construcción de la consulta con manejo de condiciones
@@ -157,6 +199,21 @@ class Invoice
             if (!empty($filter['order_id'])) {
                 $wheres[] = "order_id LIKE %s";
                 $params[] = '%' . $filter['order_id'] . '%';
+            }
+
+            if (!empty($filter['invoice_number'])) {
+                $wheres[] = "invoice_number LIKE %s";
+                $params[] = '%' . $filter['invoice_number'] . '%';
+            }
+
+            if (!empty($filter['date_start'])) {
+                $wheres[] = "date(certificated_at) >= %s";
+                $params[] = $filter['date_start'];
+            }
+
+            if (!empty($filter['date_end'])) {
+                $wheres[] = "date(certificated_at) <= %s";
+                $params[] = $filter['date_end'];
             }
 
             // Construcción de la consulta base

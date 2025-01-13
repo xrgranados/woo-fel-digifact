@@ -19,8 +19,25 @@ class SettingsPage
      */
     public function __construct()
     {
-        add_action('admin_menu', array($this, 'addMenu'));
-        add_action('admin_init', array($this, 'init'));
+        add_action('admin_menu', [$this, 'addMenu']);
+        add_action('admin_init', [$this, 'init']);
+    }
+
+    /**
+     * Add the menu to the admin page.
+     *
+     * @return void
+     */
+    public function addMenu()
+    {
+        add_submenu_page(
+            'digifact',
+            'Configuración de Digifact',
+            'Configuración',
+            'manage_options',
+            'digifact-settings',
+            [$this, 'renderSettingsPage'],
+        );
     }
 
     /**
@@ -157,23 +174,6 @@ class SettingsPage
     }
 
     /**
-     * Add the menu to the admin page.
-     *
-     * @return void
-     */
-    public function addMenu()
-    {
-        add_submenu_page(
-            'options-general.php',
-            'Digifact Settings',
-            'Digifact',
-            'manage_options',
-            'digifact-settings',
-            [$this, 'renderSettingsPage']
-        );
-    }
-
-    /**
      * Renders the settings page.
      *
      * @return void
@@ -184,11 +184,11 @@ class SettingsPage
         <div class="wrap">
             <div id="digifact-settings-container" class="df-container">
                 <div class="df-logo">
-                    <img src="<?php echo plugins_url('assets/img/digifact-logo.png', dirname(__DIR__, 2)); ?>" alt="DigiFact" class="img-fluid">
+                    <img src="<?php echo plugins_url('assets/img/digifact-logo.png', dirname(__DIR__, 2)); ?>" alt="DigiFact" class="img-fluid border-none">
                 </div>
 
                 <div class="df-content">
-                    <h1><?php _e('Configuración de Digifact', 'fel-digifact'); ?></h1>
+                    <h2 class="text-2xl font-bold mb-4"><?php _e('Configuración de Digifact', 'fel-digifact'); ?></h2>
                     <hr>
                     <form method="post" action="options.php">
                         <?php

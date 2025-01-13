@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woo Fel DigiFact
 Description: A plugin to integrate DigiFact with WooCommerce.
-Version: 1.0.0
+Version: 1.1.0
 Author: Rafael Granados
 Author URI: https://github.com/xrgranados
 Plugin URI: https://github.com/xrgranados/woo-fel-digifact

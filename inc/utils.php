@@ -146,3 +146,43 @@ if (!function_exists('_link')) {
         return "<a href=\"{$url}\" {$attributes}>{$text}</a>";
     }
 }
+
+/**
+ * Renders a button.
+ *
+ * @param string $text The text of the button.
+ * @param string $url The URL of the button.
+ * @param array $attributes An array of HTML attributes.
+ * @return string The rendered button.
+ */
+if (!function_exists('_button')) {
+    function _button($text = '', $attributes = [])
+    {
+        $attributes = _renderAttributes($attributes);
+        return "<button {$attributes}>{$text}</button>";
+    }
+}
+
+if (!function_exists('_renderHtml')) {
+    /**
+     * Renders an HTML element.
+     *
+     * @param string $element The element name.
+     * @param array $attributes An array of HTML attributes.
+     * @param array $children An array of child elements.
+     * @param bool $closed Whether the element is closed or not. Default is true.
+     * @return string The rendered element.
+     */
+    function _renderHtml($element, $attributes = [], $children = [], $closed = true)
+    {
+        $children = implode('', $children);
+        $content = $children ? $children : '';
+        $attributes = _renderAttributes($attributes);
+
+        if ($closed) {
+            return "<{$element} {$attributes}>{$content}</{$element}>";
+        }
+
+        return "<{$element} {$attributes} />";
+    }
+}

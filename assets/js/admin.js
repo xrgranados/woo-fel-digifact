@@ -89,7 +89,8 @@ jQuery(document).ready(function ($) {
     ],
   });
 
-  $(".generate_invoice").on("click", function (e) {
+  // delegate click event to table rows
+  $("table.orders").on("click", ".generate_invoice", function (e) {
     e.preventDefault();
 
     const orderId = $(this).data("order-id");
@@ -103,7 +104,7 @@ jQuery(document).ready(function ($) {
     $("#order-id--label").text(orderId);
 
     // open dialog
-    $generateDialog.dialog("open");
+    generateDialog.dialog("open");
   });
 
   // Submit generate invoice form
@@ -125,6 +126,7 @@ jQuery(document).ready(function ($) {
         const { success, data } = response;
         if (success) {
           alert(data.message);
+          location.reload();
         }
       })
       .fail(function (response) {
@@ -134,8 +136,6 @@ jQuery(document).ready(function ($) {
       .always(function () {
         // Hide the modal after sending
         $generateDialog.dialog("close");
-
-        location.reload();
       });
   });
 
@@ -179,7 +179,7 @@ jQuery(document).ready(function ($) {
     e.preventDefault();
     const invoiceId = $(this).data("invoice-id");
 
-    $("#digifact-void-modal").find("#invoice-id").val(invoiceId);
+    $("#void-form").find("#invoice-id").val(invoiceId);
 
     $voidDialog.dialog("open");
   });
@@ -191,7 +191,7 @@ jQuery(document).ready(function ($) {
     spinner.show();
 
     const invoiceId = $("#invoice-id", this).val();
-    const reason = $("#reason", this).val();
+    const reason = $("#void-form textarea#reason").val().trim();
 
     // Send data via AJAX
     $.post(ajaxurl, {
@@ -200,21 +200,26 @@ jQuery(document).ready(function ($) {
       reason: reason,
     })
       .done(function (response) {
+        console.log(response);
         const { success, data } = response;
-        if (success) {
-          alert(data.message);
+        if (success == true) {
+          alert(data);
+          location.reload();
+        } else {
+          alert(`No se pudo anular la factura: ${data}`);
+          spinner.hide();
         }
       })
       .fail(function (response) {
-        const { data } = response.responseJSON;
-        alert(data.message);
+        console.log(response);
+        const { data } = response;
+        alert(`No se pudo anular la factura: ${data}`);
       })
       .always(function () {
         // Hide the modal after sending
         $voidDialog.dialog("close");
         $("#void-invoice-btn").removeAttr("disabled");
         spinner.hide();
-        location.reload();
       });
   });
 });

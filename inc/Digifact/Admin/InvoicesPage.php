@@ -17,14 +17,20 @@ class InvoicesPage
     private $invoiceModel;
 
     /** @var int count per page */
-    private $perPage = 10;
+    private $perPage;
 
     /** @var array DigiFact settings */
     private $digifactSettings;
 
+    /** @var string The slug for the plugin */
+    private $slug = 'digifact-invoices';
+
+    /**
+     * InvoiceAdmin constructor.
+     */
     public function __construct()
     {
-        add_action('admin_menu', array($this, 'addMenu'));
+        add_action('admin_menu', [$this, 'addMenu']);
         add_action('admin_footer', [$this, 'addVoidModal']);
         add_action('wp_ajax_process_void_invoice', [$this, 'processVoidAjax']);
 
@@ -41,10 +47,10 @@ class InvoicesPage
     public function addMenu()
     {
         add_submenu_page(
-            'woocommerce',
-            'Facturas Emitidas',
-            'Facturas Emitidas',
-            'manage_woocommerce',
+            'digifact',
+            'Facturas emitidas',
+            'Facturas emitidas',
+            'manage_options',
             'digifact-invoices',
             [$this, 'renderInvoicesPage'],
         );
@@ -62,24 +68,19 @@ class InvoicesPage
             return;
         }
 
-        if ($_GET['page'] !== 'digifact-invoices') {
+        if ($_GET['page'] !== $this->slug) {
             return;
         }
         ?>
-        <div id="digifact-void-modal" role="dialog" title="Anular Factura" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>
-                        <?php _e('¿Estás seguro de anular la factura?', 'fel-digifact'); ?>
-                    </h2>
-                </div>
-
-                <hr class="modal-line">
-
+        <div id="digifact-void-modal" role="dialog" title="<?php _e('¿Estás seguro de anular la factura?', 'fel-digifact'); ?>" style="display: none;">
+            <div class="modal-content w-full">
                 <div class="modal-body">
                     <p>
                         <?php _e('Esta acción no se puede deshacer. ¿Estás seguro de querer anular la factura?', 'fel-digifact'); ?>
                     </p>
+
+                    <hr class="modal-line my-2">
+
                     <form id="void-form" method="post">
                         <input type="hidden" name="action" value="digifact_void">
                         <input id="invoice-id" type="hidden" name="invoice_id" value="">
@@ -88,7 +89,7 @@ class InvoicesPage
                                 <?php _e('Razón de anulación', 'fel-digifact'); ?>:
                             </label>
                         </div>
-                        <textarea class="form-control w-full" id="reason" name="reason" required></textarea>
+                        <textarea class="form-control w-full px-0-5 py-0-25" id="reason" name="reason" required></textarea>
                         <span id="spinner"></span>
                     </form>
                 </div>
@@ -109,17 +110,17 @@ class InvoicesPage
         $reason = sanitize_text_field($_POST['reason']);
 
         if (!$invoice_id) {
-            wp_send_json_error(['message' => __('Datos incompletos para anular la factura.', 'fel-digifact')], 400);
+            wp_send_json_error(__('Datos incompletos para anular la factura.', 'fel-digifact'), 400);
         }
 
         if (!current_user_can('manage_woocommerce')) {
-            wp_send_json_error(['message' => __('No tienes permisos para realizar esta acción', 'fel-digifact')], 400);
+            wp_send_json_error(__('No tienes permisos para realizar esta acción', 'fel-digifact'), 400);
         }
 
         $invoice = (new Invoice())->getById($invoice_id);
 
         if (!$invoice or $invoice->status !== Invoice::STATUS_CERTIFIED) {
-            wp_send_json_error(['message' => __('No está disponible la factura para anularla.', 'fel-digifact')]);
+            wp_send_json_error(__('No está disponible la factura para anularla.', 'fel-digifact'));
         }
 
         try {
@@ -144,11 +145,11 @@ class InvoicesPage
                 throw new Exception('No se pudo actualizar la factura en la base de datos');
             }
 
-            wp_send_json_success(['message' => __('Factura anulada con éxito.', 'fel-digifact')]);
+            wp_send_json_success(__('Factura anulada con éxito.', 'fel-digifact'));
         } catch (Exception $e) {
 
             wp_send_json_error(
-                ['message' => __('Error al anular la factura: ', 'fel-digifact') . $e->getMessage()],
+                __('Error al anular la factura: ', 'fel-digifact') . ' ' . $e->getMessage(),
                 400
             );
         }
@@ -199,7 +200,6 @@ class InvoicesPage
         );
     }
 
-
     /**
      * Renders the filter form.
      *
@@ -209,33 +209,53 @@ class InvoicesPage
     {
     ?>
         <form method="get">
-            <input type="hidden" name="page" value="digifact-invoices">
+            <input type="hidden" name="page" value="<?php echo $this->slug; ?>">
             <input type="hidden" name="action" value="filter">
 
             <div class="w-max-500 mb-3">
-                <div class="form-group">
-                    <label for="order_id"><?php _e('Orden', 'fel-digifact'); ?></label>
-                    <input type="text" name="order_id" value="<?php echo esc_attr(_old('order_id')); ?>">
+                <div class="form-group flex flex-row space-x-4">
+                    <label for="date_start" class="w-3/12"><?php _e('Fecha', 'fel-digifact'); ?></label>
+                    <div class="w-4/12">
+                        <input type="date" name="date_start" id="date_start" value="<?php echo esc_attr(_old('date_start')); ?>">
+                    </div>
+                    <div class="w-4/12">
+                        <input type="date" name="date_end" id="date_end" value="<?php echo esc_attr(_old('date_end')); ?>">
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="customer_nit"><?php _e('NIT', 'fel-digifact'); ?></label>
-                    <input type="text" name="customer_nit" value="<?php echo esc_attr(_old('customer_nit')); ?>">
+                <div class="form-group flex flex-row space-x-4">
+                    <label for="order_id" class="w-3/12"><?php _e('Orden', 'fel-digifact'); ?></label>
+                    <div class="w-4/12">
+                        <input type="text" name="order_id" value="<?php echo esc_attr(_old('order_id')); ?>">
+                    </div>
                 </div>
-                <p>
-                    <small class="form-text text-muted">
-                        <?php _e('* Ingrese el NIT del cliente o el número de orden para filtrar.', 'fel-digifact'); ?>
-                    </small>
-                </p>
-                <button class="button button-primary py-0-25 mr-0-5 px-1" type="submit">
-                    <?php _e('Buscar', 'fel-digifact'); ?>
-                    <i class="dashicons dashicons-search mt-0-25"></i>
-                </button>
 
-                <a href="<?php echo esc_url(admin_url("admin.php?page=digifact-invoices&paged=1")); ?>" class="button button-secondary py-0-25 px-1">
-                    <?php _e('Limpiar filtros', 'fel-digifact'); ?>
-                    <i class="dashicons dashicons-trash mt-0-25"></i>
-                </a>
+                <div class="form-group flex flex-row space-x-4">
+                    <label for="customer_nit" class="w-3/12"><?php _e('NIT cliente', 'fel-digifact'); ?></label>
+                    <div class="w-4/12">
+                        <input type="text" name="customer_nit" value="<?php echo esc_attr(_old('customer_nit')); ?>">
+                    </div>
+                </div>
+
+                <div class="form-group flex flex-row space-x-4">
+                    <label for="invoice_number" class="w-3/12"><?php _e('Número de Factura', 'fel-digifact'); ?></label>
+                    <div class="w-4/12">
+                        <input type="text" name="invoice_number" value="<?php echo esc_attr(_old('invoice_number')); ?>">
+                    </div>
+                </div>
+
+                <div class="text-center">
+
+                    <button class="button button-primary py-0-25 mr-0-5 px-1" type="submit">
+                        <?php _e('Buscar', 'fel-digifact'); ?>
+                        <i class="dashicons dashicons-search mt-0-25"></i>
+                    </button>
+
+                    <a href="<?php echo esc_url(admin_url("admin.php?page={$this->slug}&paged=1")); ?>" class="button button-secondary py-0-25 px-1">
+                        <?php _e('Limpiar filtros', 'fel-digifact'); ?>
+                        <i class="dashicons dashicons-trash mt-0-25"></i>
+                    </a>
+                </div>
             </div>
         </form>
     <?php
@@ -251,29 +271,37 @@ class InvoicesPage
         $paged = isset($_GET['paged']) ? intval($_GET['paged']) : 1;
         $customerNit = isset($_GET['customer_nit']) ? $_GET['customer_nit'] : null;
         $orderId = isset($_GET['order_id']) ? $_GET['order_id'] : null;
+        $invoiceNumber = isset($_GET['invoice_number']) ? $_GET['invoice_number'] : null;
+        $date_start = isset($_GET['date_start']) ? $_GET['date_start'] : null;
+        $date_end = isset($_GET['date_end']) ? $_GET['date_end'] : null;
         $filter = [
             'customer_nit' => $customerNit,
-            'order_id' => $orderId
+            'order_id' => $orderId,
+            'invoice_number' => $invoiceNumber,
+            'date_start' => $date_start,
+            'date_end' => $date_end,
         ];
 
         $invoices = $this->invoiceModel->getAllInvoices($paged, $this->perPage, $filter);
     ?>
         <div class="wrap">
             <div id="digifact-invoices-container" class="df-container">
-                <h1><?php _e('Facturas Emitidas', 'fel-digifact'); ?></h1>
+                <h2 class="text-2xl font-bold mb-4"><?php _e('Facturas Emitidas', 'fel-digifact'); ?></h2>
                 <hr>
+                <p class="text-lg mb-4">
+                    <?php _e('Ingrese el NIT del cliente o el número de orden para filtrar.', 'fel-digifact'); ?>
+                </p>
                 <?php $this->renderFilterForm(); ?>
-                <table id="digifact-invoices-table" class="wp-list-table widefat fixed striped table-view-list">
-                    <thead>
-                        <tr>
-                            <th><?php _e('Nombre cliente', 'fel-digifact'); ?></th>
-                            <th><?php _e('Nit cliente', 'fel-digifact'); ?></th>
-                            <th><?php _e('Número de orden', 'fel-digifact'); ?></th>
-                            <th><?php _e('Número de Factura', 'fel-digifact'); ?></th>
-                            <th><?php _e('Autorización', 'fel-digifact'); ?></th>
-                            <th><?php _e('Fecha de Certificación', 'fel-digifact'); ?></th>
-                            <th><?php _e('Estado', 'fel-digifact'); ?></th>
-                            <th><?php _e('Acciones', 'fel-digifact'); ?></th>
+                <table id="digifact-invoices-table" class="min-w-full bg-white border border-gray-300 strip-even:bg-gray-200 strip-odd:bg-gray-200 text-sm mt-4">
+                    <thead class="bg-gray-800 text-white">
+                        <tr class="border-b">
+                            <th scope="col" class="px-0-5 py-0-5 border-b text-left"><?php _e('Nombre cliente', 'fel-digifact'); ?></th>
+                            <th scope="col" class="px-0-5 py-0-5 border-b text-left"><?php _e('Nit cliente', 'fel-digifact'); ?></th>
+                            <th scope="col" class="px-0-5 py-0-5 border-b text-left"><?php _e('Número de orden', 'fel-digifact'); ?></th>
+                            <th scope="col" class="px-0-5 py-0-5 border-b text-left"><?php _e('Número de Factura', 'fel-digifact'); ?></th>
+                            <th scope="col" class="px-0-5 py-0-5 border-b text-left"><?php _e('Fecha de Certificación', 'fel-digifact'); ?></th>
+                            <th scope="col" class="px-0-5 py-0-5 border-b text-left"><?php _e('Estado', 'fel-digifact'); ?></th>
+                            <th scope="col" class="px-0-5 py-0-5 border-b w-1/12 text-center"><?php _e('Acciones', 'fel-digifact'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -287,7 +315,17 @@ class InvoicesPage
                         <?php else: ?>
                             <tr>
                                 <td colspan="8">
-                                    <?php _e('No hay facturas registradas.', 'fel-digifact'); ?>
+                                    <h3 class="text-center text-2xl font-bold mb-4">
+                                        <?php _e('No hay facturas por mostrar', 'fel-digifact'); ?>
+                                    </h3>
+                                    <?php
+                                    echo _renderHtml('img', [
+                                        'src' => plugins_url('assets/img/content.png', dirname(__DIR__, 2)),
+                                        'class' => 'mt-2 border-none m-auto mb-4',
+                                        'width' => '100px',
+                                    ]);
+                                    ?>
+
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -310,15 +348,16 @@ class InvoicesPage
         $nitEface = str_replace('-', '', $this->digifactSettings['digifact_nit']);
         $viewInvoiceUrl = esc_url("https://felgtaws.digifact.com.gt/guest/api/FEL?DATA={$nitEface}|{$invoice->authorization}|GUESTUSERQR");
     ?>
-        <tr>
-            <td><?php echo esc_html($invoice->customer_name); ?></td>
-            <td><?php echo esc_html($invoice->customer_nit); ?></td>
-            <td><?php echo esc_html($invoice->order_id); ?></td>
-            <td><?php echo esc_html($invoice->invoice_number); ?></td>
-            <td><?php echo esc_html($invoice->authorization); ?></td>
-            <td><?php echo esc_html(_formatDate($invoice->certificated_at, 'd-m-Y H:i:s')); ?></td>
-            <td><?php echo $this->renderStatusLabel($invoice); ?></td>
-            <td>
+        <tr class="odd:bg-white even:bg-gray-100">
+            <td class="px-0-25 py-0-5 border-b"><?php echo esc_html($invoice->customer_name); ?></td>
+            <td class="px-0-25 py-0-5 border-b"><?php echo esc_html($invoice->customer_nit); ?></td>
+            <td class="px-0-25 py-0-5 border-b">#<?php echo esc_html($invoice->order_id); ?></td>
+            <td class="px-0-25 py-0-5 border-b">
+                <code><?php echo esc_html($invoice->invoice_number); ?></code>
+            </td>
+            <td class="px-0-25 py-0-5 border-b"><?php echo esc_html(_formatDate($invoice->certificated_at, 'd-m-Y H:i:s')); ?></td>
+            <td class="px-0-25 py-0-5 border-b"><?php echo $this->renderStatusLabel($invoice); ?></td>
+            <td class="px-0-25 py-0-5 border-b text-center">
                 <?php
                 echo $this->renderActionButton([
                     'class' => 'button button-link fas fa-eye mr-0-25',
@@ -328,8 +367,9 @@ class InvoicesPage
                 ]);
 
                 if ($invoice->status === 'certified') {
-                    echo $this->renderActionButton([
+                    echo _renderHtml('button', [
                         'class' => 'button button-link void-invoice fas fa-times button-link-delete mr-0-25',
+                        'type' => 'button',
                         'data-invoice-id' => $invoice->id,
                         'title' => __('Anular factura', 'fel-digifact'),
                     ]);
@@ -369,7 +409,7 @@ class InvoicesPage
         $statusColor = $this->invoiceModel::STATUS_COLORS[$invoice->status] ?? '';
         $statusLabel = $labelsStatuses[$invoice->status] ?? '';
 
-        return "<span class=\"badge badge-{$statusColor}\">{$statusLabel}</span>";
+        return "<span class=\"badge badge-{$statusColor} px-0-5 py-0-25 rounded-full text-xs\">{$statusLabel}</span>";
     }
 
     /**
@@ -381,16 +421,26 @@ class InvoicesPage
      */
     private function renderPagination()
     {
+        $params = [];
+        if (isset($_GET['customer_nit'])) {
+            $params['customer_nit'] = $_GET['customer_nit'];
+        }
+
+        if (isset($_GET['order_id'])) {
+            $params['order_id'] = $_GET['order_id'];
+        }
         $paged = isset($_GET['paged']) ? intval($_GET['paged']) : 1;
-        $customerNit = isset($_GET['customer_nit']) ? $_GET['customer_nit'] : null;
-        $orderId = isset($_GET['order_id']) ? $_GET['order_id'] : null;
+
+        $params['page'] = $this->slug;
+
         $filter = [
-            'customer_nit' => $customerNit,
-            'order_id' => $orderId
+            'customer_nit' => $params['customer_nit'] ?? null,
+            'order_id' => $params['order_id'] ?? null
         ];
         $totalInvoices = $this->invoiceModel->getAllInvoicesCount($filter);
         $totalPages = ceil($totalInvoices / $this->perPage);
 
+        $query = http_build_query($params);
         if ($totalPages > 1) {
         ?>
             <div class="tablenav">
@@ -400,12 +450,12 @@ class InvoicesPage
                     if ($paged > 1) {
                     ?>
                         <span class="page-numbers">
-                            <a href="<?php echo esc_url(admin_url("admin.php?page=digifact-invoices&paged=1")); ?>">
+                            <a href="<?php echo esc_url(admin_url("admin.php?{$query}&paged=1")); ?>">
                                 <i class="dashicons dashicons-controls-skipback"></i>
                             </a>
                         </span>
                         <span class="page-numbers">
-                            <a href="<?php echo esc_url(admin_url("admin.php?page=digifact-invoices&paged={$prev_page}")); ?>">
+                            <a href="<?php echo esc_url(admin_url("admin.php?{$query}&paged={$prev_page}")); ?>">
                                 <i class="dashicons dashicons-arrow-left-alt2"></i>
                             </a>
                         </span>
@@ -423,12 +473,12 @@ class InvoicesPage
                         $next_page = $paged + 1;
                     ?>
                         <span class="page-numbers">
-                            <a href="<?php echo esc_url(admin_url("admin.php?page=digifact-invoices&paged={$next_page}")); ?>">
+                            <a href="<?php echo esc_url(admin_url("admin.php?{$query}&paged={$next_page}")); ?>">
                                 <i class="dashicons dashicons-arrow-right-alt2"></i>
                             </a>
                         </span>
                         <span class="page-numbers">
-                            <a href="<?php echo esc_url(admin_url("admin.php?page=digifact-invoices&paged={$totalPages}")); ?>">
+                            <a href="<?php echo esc_url(admin_url("admin.php?{$query}&paged={$totalPages}")); ?>">
                                 <i class="dashicons dashicons-controls-skipforward"></i>
                             </a>
                         </span>
@@ -437,8 +487,8 @@ class InvoicesPage
                     ?>
                 </div>
             </div>
-<?php
+        <?php
         }
         return $totalPages;
     }
-} // End InvoicesPage class
+} // End InvoicesPage Class

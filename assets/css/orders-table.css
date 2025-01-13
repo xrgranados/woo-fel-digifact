@@ -1,0 +1,22 @@
+#df-orders-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#df-orders-filters select {
+    margin-right: 1rem;
+}
+
+#df-orders-filters input {
+    margin-right: 1rem;
+    width: 200px;
+}
+
+#df-orders-filters button {
+    margin-left: 1rem;
+}
+
+#df-orders-filters a {
+    margin-left: 1rem;
+}
