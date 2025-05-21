@@ -23,9 +23,65 @@ class ProcessBilling
     public function __construct()
     {
         $this->digifactSettings = get_option('digifact_settings');
+        // add button to order edit page
+        add_filter(
+            'woocommerce_admin_order_actions_end',
+            array($this, 'addProcessBillingButton'),
+            10,
+            2
+        );
 
         add_action('admin_footer', [$this, 'addModal']);
         add_action('wp_ajax_process_generate_invoice', [$this, 'processAjax']);
+    }
+
+    /**
+     * Adds a button to the order edit page to generate an invoice.
+     *
+     * @param WC_Order $order The order object.
+     * @return void
+     */
+    public function addProcessBillingButton($order)
+    {
+        $order_id = $order->get_id();
+
+        if (!$order_id) {
+            return;
+        }
+
+        $invoice = (new Invoice())->getByOrderId($order_id);
+
+        if ($invoice && $invoice->status === Invoice::STATUS_CERTIFIED) {
+            $nitEface = str_replace('-', '', $this->digifactSettings['digifact_nit']);
+            $viewInvoiceUrl = esc_url("https://felgtaws.digifact.com.gt/guest/api/FEL?DATA={$nitEface}|{$invoice->authorization}|GUESTUSERQR");
+
+            echo _link(
+                $viewInvoiceUrl,
+                '',
+                [
+                    'class' => 'button dashicons dashicons-visibility',
+                    'class' => 'button fas fa-eye text-center',
+                    'target' => '_blank',
+                    'title' => __('Ver factura', 'fel-digifact'),
+                ]
+            );
+            return;
+        }
+
+        // Verificar si la función `get_billing_nit` existe
+        $customer_nit = function_exists('get_billing_nit')
+            ? get_billing_nit($order_id)
+            : get_post_meta($order_id, '_billing_nit', true);
+        $customer_email = $order->get_billing_email() ?: $this->digifactSettings['digifact_email'];
+
+        echo _link('#', '', [
+            'class' => 'button generate_invoice dashicons dashicons-text-page',
+            'class' => 'button generate_invoice fas fa-file text-center',
+            'data-nit' => $customer_nit,
+            'data-order-id' => $order_id,
+            'data-email' => $customer_email,
+            'title' => __('Generar factura', 'fel-digifact'),
+        ]);
     }
 
     /**
@@ -40,13 +96,9 @@ class ProcessBilling
         }
 
         // if page is orders list, page=wc-order
-        if (!isset($_GET['page'])) {
-            return;
-        }
-
-        if ($_GET['page'] != 'digifact-orders') {
-            return;
-        }
+        // if (!isset($_GET['page'])) {
+        //     return;
+        // }
 
         ?>
         <div id="dialog-generate-invoice" title="<?php _e('Generar Factura Electrónica', 'fel-digifact'); ?>" style="display: none;">

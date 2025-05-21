@@ -11,14 +11,6 @@ function digifact_admin_assets()
         return;
     }
 
-    if (! isset($_GET['page'])) {
-        return;
-    }
-
-    if ('digifact' !== substr($_GET['page'], 0, 8)) {
-        return;
-    }
-
     // load font awesome
     wp_enqueue_style(
         'font-awesome',
@@ -44,27 +36,6 @@ function digifact_admin_assets()
 
     wp_enqueue_script('jquery-ui');
 
-    wp_enqueue_style(
-        'digifact-style',
-        plugins_url('assets/css/styles.css', dirname(__FILE__)),
-        array(),
-        '1.0.0'
-    );
-
-    wp_enqueue_style(
-        'digifact-orders-table',
-        plugins_url('assets/css/orders-table.css', dirname(__FILE__)),
-        array(),
-        '1.0.0'
-    );
-
-    wp_enqueue_style(
-        'tailwindcss',
-        'https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css',
-        array(),
-        '1.0.0'
-    );
-
     wp_enqueue_script(
         'digifact-utils',
         plugins_url('assets/js/utils.js', dirname(__FILE__)),
@@ -79,6 +50,35 @@ function digifact_admin_assets()
         array('jquery'),
         '1.0.0',
         true
+    );
+
+    wp_enqueue_style(
+        'digifact-style',
+        plugins_url('assets/css/styles.css', dirname(__FILE__)),
+        array(),
+        '1.0.0'
+    );
+
+    if (! isset($_GET['page'])) {
+        return;
+    }
+
+    if ('digifact' !== substr($_GET['page'], 0, 8)) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'digifact-orders-table',
+        plugins_url('assets/css/orders-table.css', dirname(__FILE__)),
+        array(),
+        '1.0.0'
+    );
+
+    wp_enqueue_style(
+        'tailwindcss',
+        'https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css',
+        array(),
+        '1.0.0'
     );
 }
 
