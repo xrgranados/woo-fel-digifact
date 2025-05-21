@@ -5,7 +5,7 @@ Description: A plugin to integrate DigiFact with WooCommerce.
 Version: 1.1.0
 Author: Rafael Granados
 Author URI: https://github.com/xrgranados
-Plugin URI: https://github.com/xrgranados/woo-fel-digifact
+Plugin URI: https://rgranados.notion.site/Woo-Fel-Digifact-1fa62456ebc0807db1e5fb2996158979?pvs=4
 License: GPLv2 or later
 */
 
